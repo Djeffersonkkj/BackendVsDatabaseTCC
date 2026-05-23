@@ -1,0 +1,10 @@
+USE SistemaDeVendas;
+GO
+
+CREATE TABLE Situacao(
+	Id      TINYINT     IDENTITY,
+	Nome    VARCHAR(50) NOT NULL,
+
+	CONSTRAINT PK_IdSituacao PRIMARY KEY (Id)
+);
+GO

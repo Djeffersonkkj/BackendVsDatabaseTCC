@@ -1,0 +1,10 @@
+USE SistemaDeVendas;
+GO
+
+CREATE TABLE Categoria(
+	Id   TINYINT      IDENTITY,
+	Nome VARCHAR(100) NOT NULL,
+
+	CONSTRAINT PK_IdCategoria PRIMARY KEY (Id)
+);
+GO
