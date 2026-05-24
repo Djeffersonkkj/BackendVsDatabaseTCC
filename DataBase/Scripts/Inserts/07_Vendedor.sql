@@ -1,0 +1,22 @@
+-- Inserts para tabela Vendedor
+INSERT INTO Vendedor (IdSituacao, Nome, CPF, Comissao) VALUES
+(4, 'Léo Guerra', '54269713828', 14.62),
+(1, 'Eduarda Melo', '89042615702', 8.36),
+(2, 'Hadassa Mendonça', '12697804331', 9.65),
+(1, 'Eduardo Jesus', '81397564075', 2.5),
+(4, 'Sophia Campos', '27853691491', 7.0),
+(1, 'Lavínia da Mata', '94683527065', 4.52),
+(1, 'Nathan Jesus', '93178524673', 5.32),
+(4, 'Sarah Costela', '84052136942', 11.39),
+(1, 'Alice Fernandes', '20387614508', 8.35),
+(2, 'Liam Vieira', '34018567235', 11.05),
+(2, 'Josué Lima', '18073524635', 14.04),
+(2, 'Brayan Camargo', '28067419396', 5.15),
+(1, 'José Pedro Borges', '54387601280', 12.57),
+(2, 'Isaac Silva', '51093672803', 10.79),
+(2, 'Leonardo Monteiro', '65023718417', 10.39),
+(1, 'Lucca Aparecida', '82970413523', 7.92),
+(2, 'Sara Rezende', '62104893704', 5.31),
+(2, 'Maria Cirino', '06254893142', 14.37),
+(3, 'Elisa Camargo', '68932017450', 2.16),
+(3, 'João Lucas Sá', '40713682922', 10.38);
