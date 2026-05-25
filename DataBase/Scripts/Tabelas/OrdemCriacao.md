@@ -21,6 +21,7 @@ As tabelas devem ser criadas respeitando as dependencias de chave estrangeira. P
 
 6. `Produto.sql`
    - Depende de `Categoria`, por causa de `IdCategoria`.
+   - Em bases existentes, execute tambem `Produto_RowVersion_Alter.sql` para adicionar a coluna `RowVersion`.
 
 7. `Vendedor.sql`
    - Depende de `Situacao`, por causa de `IdSituacao`.

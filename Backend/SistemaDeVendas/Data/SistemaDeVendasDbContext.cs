@@ -75,6 +75,9 @@ public sealed class SistemaDeVendasDbContext(DbContextOptions<SistemaDeVendasDbC
             entity.Property(e => e.Nome).HasMaxLength(150).IsUnicode(false).IsRequired();
             entity.Property(e => e.Descricao).HasMaxLength(600).IsUnicode(false).IsRequired();
             entity.Property(e => e.PrecoUnitario).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.RowVersion)
+                .IsRowVersion()
+                .IsConcurrencyToken();
             entity.HasOne(e => e.Categoria)
                 .WithMany(e => e.Produtos)
                 .HasForeignKey(e => e.IdCategoria)

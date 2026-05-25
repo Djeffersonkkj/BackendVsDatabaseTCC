@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
+using SistemaDeVendas.BusinessRules;
 using SistemaDeVendas.Data;
 using SistemaDeVendas.DTOs;
 using SistemaDeVendas.Interfaces;
@@ -13,6 +14,8 @@ public sealed class RelatorioService(SistemaDeVendasDbContext context) : IRelato
         DateTime dataFim,
         CancellationToken cancellationToken = default)
     {
+        PedidoBusinessRules.ValidarPeriodo(dataInicio, dataFim);
+
         // Gargalo esperado: GROUP BY em campo derivado de DataPedido. Um indice em DataPedido ajuda no filtro,
         // mas agrupamentos mensais ainda podem exigir sort/hash aggregate no SQL Server.
         var consulta = context.Pedidos
@@ -39,6 +42,8 @@ public sealed class RelatorioService(SistemaDeVendasDbContext context) : IRelato
         int tamanhoPagina = 10,
         CancellationToken cancellationToken = default)
     {
+        PedidoBusinessRules.ValidarPeriodo(dataInicio, dataFim);
+
         var skip = CalcularSkip(pagina, tamanhoPagina);
 
         // Impacto de indices: FK Pedido.IdVendedor e DataPedido reduzem leituras no JOIN e no filtro de periodo.
@@ -68,6 +73,8 @@ public sealed class RelatorioService(SistemaDeVendasDbContext context) : IRelato
         int tamanhoPagina = 10,
         CancellationToken cancellationToken = default)
     {
+        PedidoBusinessRules.ValidarPeriodo(dataInicio, dataFim);
+
         var skip = CalcularSkip(pagina, tamanhoPagina);
 
         // Impacto de joins: PedidoProduto costuma ser a maior tabela. Filtrar por Pedido.DataPedido antes da
@@ -103,6 +110,8 @@ public sealed class RelatorioService(SistemaDeVendasDbContext context) : IRelato
         int tamanhoPagina = 10,
         CancellationToken cancellationToken = default)
     {
+        PedidoBusinessRules.ValidarPeriodo(dataInicio, dataFim);
+
         var skip = CalcularSkip(pagina, tamanhoPagina);
 
         // Projection direta para DTO evita materializar Cliente e Pedido completos. Isso reduz memoria no .NET,
@@ -132,6 +141,8 @@ public sealed class RelatorioService(SistemaDeVendasDbContext context) : IRelato
         int tamanhoPagina = 20,
         CancellationToken cancellationToken = default)
     {
+        PedidoBusinessRules.ValidarPeriodo(dataInicio, dataFim);
+
         var skip = CalcularSkip(pagina, tamanhoPagina);
 
         // Consulta propositalmente pesada para comparacao com Stored Procedure:

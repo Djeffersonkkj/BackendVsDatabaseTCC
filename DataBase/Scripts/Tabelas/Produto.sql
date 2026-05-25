@@ -8,6 +8,7 @@ CREATE TABLE Produto(
 	Descricao     VARCHAR(600) NOT NULL,
 	Estoque       INT          NOT NULL,
 	PrecoUnitario DECIMAL(18, 2) NOT NULL,
+	RowVersion    ROWVERSION   NOT NULL,
 
 	CONSTRAINT PK_IdProduto PRIMARY KEY (Id),
 	CONSTRAINT FK_IdCategoriaProduto FOREIGN KEY (IdCategoria) REFERENCES Categoria(Id)
