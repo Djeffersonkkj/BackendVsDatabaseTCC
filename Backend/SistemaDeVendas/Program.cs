@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SistemaDeVendas.Data;
-using SistemaDeVendas.Interface;
+using SistemaDeVendas.Interfaces;
 using SistemaDeVendas.Repositories;
 using SistemaDeVendas.Services;
 using SistemaDeVendas.Utils;

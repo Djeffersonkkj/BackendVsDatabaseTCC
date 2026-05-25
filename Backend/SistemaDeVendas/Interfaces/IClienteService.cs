@@ -1,6 +1,6 @@
 using SistemaDeVendas.DTOs;
 
-namespace SistemaDeVendas.Interface;
+namespace SistemaDeVendas.Interfaces;
 
 // Camada Services: organiza regras de negócio e casos de uso antes de acessar repositories.
 public interface IClienteService

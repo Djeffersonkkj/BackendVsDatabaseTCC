@@ -1,6 +1,6 @@
 using SistemaDeVendas.DTOs;
 
-namespace SistemaDeVendas.Interface;
+namespace SistemaDeVendas.Interfaces;
 
 public interface IProdutoService
 {

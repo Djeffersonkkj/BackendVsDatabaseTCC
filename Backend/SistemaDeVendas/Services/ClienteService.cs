@@ -1,5 +1,5 @@
 using SistemaDeVendas.DTOs;
-using SistemaDeVendas.Interface;
+using SistemaDeVendas.Interfaces;
 
 namespace SistemaDeVendas.Services;
 
