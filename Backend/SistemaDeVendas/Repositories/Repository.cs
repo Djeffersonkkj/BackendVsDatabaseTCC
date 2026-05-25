@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using SistemaDeVendas.Data;
+using SistemaDeVendas.Interface;
 
 namespace SistemaDeVendas.Repositories;
 

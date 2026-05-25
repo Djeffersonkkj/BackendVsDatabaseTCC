@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace SistemaDeVendas.Repositories;
+namespace SistemaDeVendas.Interface;
 
 // Camada Repositories: encapsula operações básicas de persistência e consulta das entidades.
 public interface IRepository<TEntity>

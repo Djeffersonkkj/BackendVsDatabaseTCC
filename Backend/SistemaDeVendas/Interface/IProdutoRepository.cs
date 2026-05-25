@@ -1,7 +1,7 @@
 using SistemaDeVendas.DTOs;
 using SistemaDeVendas.Models;
 
-namespace SistemaDeVendas.Repositories;
+namespace SistemaDeVendas.Interface;
 
 public interface IProdutoRepository : IRepository<Produto>
 {
