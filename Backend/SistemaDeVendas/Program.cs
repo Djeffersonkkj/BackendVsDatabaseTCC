@@ -44,16 +44,18 @@ while (true)
 {
     Console.WriteLine();
     Console.WriteLine("Comparacao Backend x Stored Procedure");
-    Console.WriteLine("1. Executar regra via backend");
-    Console.WriteLine("2. Executar regra via procedure");
-    Console.WriteLine("3. Executar benchmark reproduzivel");
-    Console.WriteLine("4. Salvar SQL gerado pelo EF Core");
-    Console.WriteLine("5. Sair");
+    Console.WriteLine("[1] Executar regra via backend");
+    Console.WriteLine("[2] Executar regra via procedure");
+    Console.WriteLine("[3] Executar benchmark reproduzivel");
+    Console.WriteLine("[4] Salvar SQL gerado pelo EF Core");
+    Console.WriteLine("[0] Sair");
     Console.Write("Escolha: ");
 
     var opcao = Console.ReadLine();
-    if (opcao == "5")
+    if (opcao == "0")
     {
+        Console.Clear();
+        Console.WriteLine("Sistema finalizado.");
         break;
     }
 
