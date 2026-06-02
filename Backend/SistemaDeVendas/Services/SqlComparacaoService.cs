@@ -19,13 +19,22 @@ public sealed class SqlComparacaoService(SistemaDeVendasDbContext context) : ISq
         var consulta = context.Pedidos
             .AsNoTracking()
             .Where(pedido => pedido.DataPedido >= dataInicio && pedido.DataPedido < dataFim)
-            .GroupBy(pedido => new { pedido.IdVendedor, pedido.Vendedor.Nome })
-            .Select(grupo => new RankingVendedorDto(
+            .Select(pedido => new
+            {
+                pedido.IdVendedor,
+                Vendedor = pedido.Vendedor.Nome,
+                pedido.TotalPedido,
+                pedido.ValorComissao
+            })
+            .GroupBy(pedido => new { pedido.IdVendedor, pedido.Vendedor })
+            .Select(grupo => new
+            {
                 grupo.Key.IdVendedor,
-                grupo.Key.Nome,
-                grupo.Sum(pedido => pedido.TotalPedido),
-                grupo.Count(),
-                grupo.Sum(pedido => pedido.ValorComissao)))
+                grupo.Key.Vendedor,
+                TotalVendido = grupo.Sum(pedido => pedido.TotalPedido),
+                QuantidadePedidos = grupo.Count(),
+                ComissaoTotal = grupo.Sum(pedido => pedido.ValorComissao)
+            })
             .OrderByDescending(resultado => resultado.TotalVendido)
             .ThenBy(resultado => resultado.Vendedor)
             .Take(10);
