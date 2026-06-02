@@ -21,18 +21,40 @@ public sealed class RelatorioService(SistemaDeVendasDbContext context) : IRelato
         var consulta = context.Pedidos
             .AsNoTracking()
             .Where(pedido => pedido.DataPedido >= dataInicio && pedido.DataPedido < dataFim)
-            .GroupBy(pedido => new { pedido.DataPedido.Year, pedido.DataPedido.Month })
-            .Select(grupo => new VendasPorPeriodoDto(
-                grupo.Key.Year,
-                grupo.Key.Month,
-                grupo.Sum(pedido => pedido.TotalPedido),
-                grupo.Count(),
-                grupo.Average(pedido => pedido.TotalPedido),
-                grupo.Sum(pedido => pedido.ValorComissao)))
+            .Select(pedido => new
+            {
+                Ano = pedido.DataPedido.Year,
+                Mes = pedido.DataPedido.Month,
+                pedido.TotalPedido,
+                pedido.ValorComissao
+            })
+            .GroupBy(pedido => new { pedido.Ano, pedido.Mes })
+            .Select(grupo => new
+            {
+                grupo.Key.Ano,
+                grupo.Key.Mes,
+                TotalVendido = grupo.Sum(pedido => pedido.TotalPedido),
+                QuantidadePedidos = grupo.Count(),
+                TicketMedio = grupo.Average(pedido => pedido.TotalPedido),
+                TotalComissao = grupo.Sum(pedido => pedido.ValorComissao)
+            })
             .OrderBy(resultado => resultado.Ano)
             .ThenBy(resultado => resultado.Mes);
 
-        return ExecutarMedindoAsync(() => consulta.ToListAsync(cancellationToken), cancellationToken);
+        return ExecutarMedindoAsync(async () =>
+        {
+            var registros = await consulta.ToListAsync(cancellationToken);
+
+            return registros
+                .Select(resultado => new VendasPorPeriodoDto(
+                    resultado.Ano,
+                    resultado.Mes,
+                    resultado.TotalVendido,
+                    resultado.QuantidadePedidos,
+                    resultado.TicketMedio,
+                    resultado.TotalComissao))
+                .ToList();
+        }, cancellationToken);
     }
 
     public Task<RelatorioExecucaoDto<RankingVendedorDto>> ObterRankingVendedoresAsync(
