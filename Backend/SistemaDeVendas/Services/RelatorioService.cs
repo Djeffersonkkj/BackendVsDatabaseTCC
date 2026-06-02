@@ -171,7 +171,7 @@ public sealed class RelatorioService(SistemaDeVendasDbContext context) : IRelato
         // multiplos joins, filtro por data, agrupamento composto e ordenacao por agregados.
         // Indices nas FKs reduzem o custo dos joins; indices em DataPedido ajudam a restringir o periodo.
         // Agregacoes com SUM/AVG/COUNT podem gerar hash/sort aggregate e consumir tempdb em bases grandes.
-        var consulta =
+        var baseConsulta =
             from pedido in context.Pedidos.AsNoTracking()
             join item in context.PedidosProdutos.AsNoTracking() on pedido.Id equals item.IdPedido
             join produto in context.Produtos.AsNoTracking() on item.IdProduto equals produto.Id
@@ -179,28 +179,98 @@ public sealed class RelatorioService(SistemaDeVendasDbContext context) : IRelato
             join vendedor in context.Vendedores.AsNoTracking() on pedido.IdVendedor equals vendedor.Id
             join metodoPagamento in context.MetodosPagamento.AsNoTracking() on pedido.IdMetodoPagamento equals metodoPagamento.Id
             where pedido.DataPedido >= dataInicio && pedido.DataPedido < dataFim
-            group new { pedido, item } by new
+            select new
             {
+                IdPedido = pedido.Id,
+                pedido.ValorComissao,
                 Categoria = categoria.Nome,
                 MetodoPagamento = metodoPagamento.Nome,
-                Vendedor = vendedor.Nome
+                Vendedor = vendedor.Nome,
+                item.Quantidade,
+                item.SubTotal,
+                item.Desconto
+            };
+
+        var consultaResumo =
+            from linha in baseConsulta
+            group linha by new
+            {
+                linha.Categoria,
+                linha.MetodoPagamento,
+                linha.Vendedor
             }
             into grupo
-            orderby grupo.Sum(x => x.item.SubTotal) descending,
+            orderby grupo.Sum(x => x.SubTotal) descending,
                 grupo.Key.Categoria,
                 grupo.Key.MetodoPagamento,
                 grupo.Key.Vendedor
-            select new RelatorioConsolidadoDto(
+            select new
+            {
                 grupo.Key.Categoria,
                 grupo.Key.MetodoPagamento,
                 grupo.Key.Vendedor,
-                grupo.Select(x => x.pedido.Id).Distinct().Count(),
-                grupo.Sum(x => x.item.Quantidade),
-                grupo.Sum(x => x.item.SubTotal),
-                grupo.Select(x => new { x.pedido.Id, x.pedido.ValorComissao }).Distinct().Sum(x => x.ValorComissao),
-                grupo.Average(x => x.item.Desconto));
+                QuantidadePedidos = grupo.Select(x => x.IdPedido).Distinct().Count(),
+                QuantidadeItensVendidos = grupo.Sum(x => x.Quantidade),
+                TotalVendido = grupo.Sum(x => x.SubTotal),
+                MediaDesconto = grupo.Average(x => x.Desconto)
+            };
 
-        return ExecutarMedindoAsync(() => consulta.Skip(skip).Take(tamanhoPagina).ToListAsync(cancellationToken), cancellationToken);
+        var consultaComissoes =
+            from pedidoGrupo in baseConsulta
+                .Select(linha => new
+                {
+                    linha.Categoria,
+                    linha.MetodoPagamento,
+                    linha.Vendedor,
+                    linha.IdPedido,
+                    linha.ValorComissao
+                })
+                .Distinct()
+            group pedidoGrupo by new
+            {
+                pedidoGrupo.Categoria,
+                pedidoGrupo.MetodoPagamento,
+                pedidoGrupo.Vendedor
+            }
+            into grupo
+            select new
+            {
+                grupo.Key.Categoria,
+                grupo.Key.MetodoPagamento,
+                grupo.Key.Vendedor,
+                TotalComissao = grupo.Sum(x => x.ValorComissao)
+            };
+
+        return ExecutarMedindoAsync(async () =>
+        {
+            var resumo = await consultaResumo
+                .Skip(skip)
+                .Take(tamanhoPagina)
+                .ToListAsync(cancellationToken);
+
+            var comissoes = await consultaComissoes.ToListAsync(cancellationToken);
+            var comissaoPorGrupo = comissoes.ToDictionary(
+                item => $"{item.Categoria}|{item.MetodoPagamento}|{item.Vendedor}",
+                item => item.TotalComissao);
+
+            return resumo
+                .Select(item =>
+                {
+                    var chave = $"{item.Categoria}|{item.MetodoPagamento}|{item.Vendedor}";
+                    comissaoPorGrupo.TryGetValue(chave, out var totalComissao);
+
+                    return new RelatorioConsolidadoDto(
+                        item.Categoria,
+                        item.MetodoPagamento,
+                        item.Vendedor,
+                        item.QuantidadePedidos,
+                        item.QuantidadeItensVendidos,
+                        item.TotalVendido,
+                        totalComissao,
+                        item.MediaDesconto);
+                })
+                .ToList();
+        }, cancellationToken);
     }
 
     private static async Task<RelatorioExecucaoDto<T>> ExecutarMedindoAsync<T>(

@@ -35,17 +35,19 @@ BEGIN
     SET @Pagina = CASE WHEN @Pagina < 1 THEN 1 ELSE @Pagina END;
     SET @TamanhoPagina = CASE WHEN @TamanhoPagina < 1 THEN 1 ELSE @TamanhoPagina END;
 
-    WITH Base AS
+    WITH Resumo AS
     (
         SELECT
-            pedido.Id AS IdPedido,
+            categoria.Id AS IdCategoria,
+            metodoPagamento.Id AS IdMetodoPagamento,
+            vendedor.Id AS IdVendedor,
             categoria.Nome AS Categoria,
             metodoPagamento.Nome AS MetodoPagamento,
             vendedor.Nome AS Vendedor,
-            item.Quantidade,
-            item.SubTotal,
-            item.Desconto,
-            pedido.ValorComissao
+            COUNT(DISTINCT pedido.Id) AS QuantidadePedidos,
+            SUM(CONVERT(INT, item.Quantidade)) AS QuantidadeItensVendidos,
+            SUM(item.SubTotal) AS TotalVendido,
+            AVG(item.Desconto) AS MediaDesconto
         FROM Pedido AS pedido
         INNER JOIN PedidoProduto AS item
             ON item.IdPedido = pedido.Id
@@ -59,54 +61,55 @@ BEGIN
             ON metodoPagamento.Id = pedido.IdMetodoPagamento
         WHERE pedido.DataPedido >= @DataInicio
           AND pedido.DataPedido < @DataFim
-    ),
-    ComissoesPorGrupo AS
+        GROUP BY
+            categoria.Id,
+            metodoPagamento.Id,
+            vendedor.Id,
+            categoria.Nome,
+            metodoPagamento.Nome,
+            vendedor.Nome
+        ORDER BY
+            TotalVendido DESC,
+            categoria.Nome,
+            metodoPagamento.Nome,
+            vendedor.Nome
+        OFFSET (@Pagina - 1) * @TamanhoPagina ROWS
+        FETCH NEXT @TamanhoPagina ROWS ONLY
+    )
+    SELECT
+        resumo.Categoria,
+        resumo.MetodoPagamento,
+        resumo.Vendedor,
+        resumo.QuantidadePedidos,
+        resumo.QuantidadeItensVendidos,
+        resumo.TotalVendido,
+        comissao.TotalComissao,
+        resumo.MediaDesconto
+    FROM Resumo AS resumo
+    CROSS APPLY
     (
-        SELECT
-            Categoria,
-            MetodoPagamento,
-            Vendedor,
-            SUM(ValorComissao) AS TotalComissao
+        SELECT SUM(pedidosDistintos.ValorComissao) AS TotalComissao
         FROM
         (
             SELECT DISTINCT
-                Categoria,
-                MetodoPagamento,
-                Vendedor,
-                IdPedido,
-                ValorComissao
-            FROM Base
+                pedido.Id,
+                pedido.ValorComissao
+            FROM Pedido AS pedido
+            INNER JOIN PedidoProduto AS item
+                ON item.IdPedido = pedido.Id
+            INNER JOIN Produto AS produto
+                ON produto.Id = item.IdProduto
+            WHERE pedido.DataPedido >= @DataInicio
+              AND pedido.DataPedido < @DataFim
+              AND pedido.IdMetodoPagamento = resumo.IdMetodoPagamento
+              AND pedido.IdVendedor = resumo.IdVendedor
+              AND produto.IdCategoria = resumo.IdCategoria
         ) AS pedidosDistintos
-        GROUP BY
-            Categoria,
-            MetodoPagamento,
-            Vendedor
-    )
-    SELECT
-        base.Categoria,
-        base.MetodoPagamento,
-        base.Vendedor,
-        COUNT(DISTINCT base.IdPedido) AS QuantidadePedidos,
-        SUM(CONVERT(INT, base.Quantidade)) AS QuantidadeItensVendidos,
-        SUM(base.SubTotal) AS TotalVendido,
-        comissao.TotalComissao,
-        AVG(base.Desconto) AS MediaDesconto
-    FROM Base AS base
-    INNER JOIN ComissoesPorGrupo AS comissao
-        ON comissao.Categoria = base.Categoria
-       AND comissao.MetodoPagamento = base.MetodoPagamento
-       AND comissao.Vendedor = base.Vendedor
-    GROUP BY
-        base.Categoria,
-        base.MetodoPagamento,
-        base.Vendedor,
-        comissao.TotalComissao
+    ) AS comissao
     ORDER BY
-        TotalVendido DESC,
-        base.Categoria,
-        base.MetodoPagamento,
-        base.Vendedor
-    OFFSET (@Pagina - 1) * @TamanhoPagina ROWS
-    FETCH NEXT @TamanhoPagina ROWS ONLY;
+        resumo.TotalVendido DESC,
+        resumo.Categoria,
+        resumo.MetodoPagamento,
+        resumo.Vendedor;
 END;
 GO
