@@ -98,16 +98,16 @@ public sealed class BenchmarkService(
 
         return new BenchmarkOperacaoDto(
             "RegistrarPedido",
-            CalcularEstatistica(temposBackend),
-            CalcularEstatistica(temposProcedure),
+            temposBackend,
+            temposProcedure,
             registrosBackend,
             registrosProcedure,
             cenario.Execucoes,
             equivalente,
-            CalcularEstatistica(processamentoBackend),
-            CalcularEstatistica(persistenciaBackend),
-            CalcularEstatistica(processamentoProcedure),
-            CalcularEstatistica(persistenciaProcedure));
+            processamentoBackend,
+            persistenciaBackend,
+            processamentoProcedure,
+            persistenciaProcedure);
     }
 
     private static async Task<BenchmarkOperacaoDto> MedirRelatorioAsync<T>(
@@ -144,8 +144,8 @@ public sealed class BenchmarkService(
 
         return new BenchmarkOperacaoDto(
             operacao,
-            CalcularEstatistica(temposBackend),
-            CalcularEstatistica(temposProcedure),
+            temposBackend,
+            temposProcedure,
             registrosBackend,
             registrosProcedure,
             execucoes,
@@ -255,15 +255,4 @@ public sealed class BenchmarkService(
         return stopwatch.Elapsed;
     }
 
-    private static EstatisticaTempoDto CalcularEstatistica(IReadOnlyList<double> valores)
-    {
-        var ordenados = valores.Order().ToArray();
-        var media = ordenados.Average();
-        var mediana = ordenados.Length % 2 == 1
-            ? ordenados[ordenados.Length / 2]
-            : (ordenados[ordenados.Length / 2 - 1] + ordenados[ordenados.Length / 2]) / 2;
-        var variancia = ordenados.Sum(valor => Math.Pow(valor - media, 2)) / ordenados.Length;
-
-        return new EstatisticaTempoDto(media, mediana, ordenados.First(), ordenados.Last(), Math.Sqrt(variancia));
-    }
 }

@@ -75,22 +75,22 @@ public static class ConsoleTable
             Console.WriteLine(operacao.Operacao);
             Console.WriteLine($"Equivalencia de resultado: {(operacao.ResultadosEquivalentes ? "sim" : "nao")}");
             Console.WriteLine($"Registros backend/procedure: {operacao.RegistrosBackend}/{operacao.RegistrosProcedure}");
-            Console.WriteLine($"Media backend: {operacao.Backend.MediaMs:N2} ms");
-            Console.WriteLine($"Media procedure: {operacao.Procedure.MediaMs:N2} ms");
-            Console.WriteLine($"Mediana backend/procedure: {operacao.Backend.MedianaMs:N2}/{operacao.Procedure.MedianaMs:N2} ms");
-            Console.WriteLine($"Min backend/procedure: {operacao.Backend.MinimoMs:N2}/{operacao.Procedure.MinimoMs:N2} ms");
-            Console.WriteLine($"Max backend/procedure: {operacao.Backend.MaximoMs:N2}/{operacao.Procedure.MaximoMs:N2} ms");
-            Console.WriteLine($"Desvio padrao backend/procedure: {operacao.Backend.DesvioPadraoMs:N2}/{operacao.Procedure.DesvioPadraoMs:N2} ms");
-            Console.WriteLine($"Diferenca percentual media: {operacao.DiferencaPercentual:N2}%");
+            Console.WriteLine($"Tempos backend (ms): {FormatarSerie(operacao.TemposBackendMs)}");
+            Console.WriteLine($"Tempos procedure (ms): {FormatarSerie(operacao.TemposProcedureMs)}");
 
-            if (operacao.ProcessamentoBackend is not null && operacao.PersistenciaBackend is not null
-                && operacao.ProcessamentoProcedure is not null && operacao.PersistenciaProcedure is not null)
+            if (operacao.TemposProcessamentoBackendMs is not null && operacao.TemposPersistenciaBackendMs is not null
+                && operacao.TemposProcessamentoProcedureMs is not null && operacao.TemposPersistenciaProcedureMs is not null)
             {
-                Console.WriteLine($"Processamento medio backend/procedure: {operacao.ProcessamentoBackend.MediaMs:N2}/{operacao.ProcessamentoProcedure.MediaMs:N2} ms");
-                Console.WriteLine($"Persistencia medio backend/procedure: {operacao.PersistenciaBackend.MediaMs:N2}/{operacao.PersistenciaProcedure.MediaMs:N2} ms");
+                Console.WriteLine($"Processamento backend (ms): {FormatarSerie(operacao.TemposProcessamentoBackendMs)}");
+                Console.WriteLine($"Processamento procedure (ms): {FormatarSerie(operacao.TemposProcessamentoProcedureMs)}");
+                Console.WriteLine($"Persistencia backend (ms): {FormatarSerie(operacao.TemposPersistenciaBackendMs)}");
+                Console.WriteLine($"Persistencia procedure (ms): {FormatarSerie(operacao.TemposPersistenciaProcedureMs)}");
             }
         }
     }
+
+    private static string FormatarSerie(IEnumerable<double> valores) =>
+        string.Join(", ", valores.Select(valor => valor.ToString("N2")));
 
     public static void ImprimirVendasPorPeriodo(IEnumerable<VendasPorPeriodoDto> registros)
     {

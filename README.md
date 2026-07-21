@@ -145,10 +145,8 @@ O benchmark mede:
 
 Para cada operacao, ele compara backend e procedure usando:
 
+- boxplot dos tempos
 - media
-- mediana
-- minimo
-- maximo
 - desvio padrao
 - diferenca percentual
 - quantidade de registros

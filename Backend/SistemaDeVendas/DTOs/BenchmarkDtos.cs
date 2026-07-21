@@ -8,29 +8,18 @@ public sealed record BenchmarkCenarioDto(
     int TamanhoPagina,
     int Execucoes);
 
-public sealed record EstatisticaTempoDto(
-    double MediaMs,
-    double MedianaMs,
-    double MinimoMs,
-    double MaximoMs,
-    double DesvioPadraoMs);
-
 public sealed record BenchmarkOperacaoDto(
     string Operacao,
-    EstatisticaTempoDto Backend,
-    EstatisticaTempoDto Procedure,
+    IReadOnlyList<double> TemposBackendMs,
+    IReadOnlyList<double> TemposProcedureMs,
     int RegistrosBackend,
     int RegistrosProcedure,
     int Execucoes,
     bool ResultadosEquivalentes,
-    EstatisticaTempoDto? ProcessamentoBackend = null,
-    EstatisticaTempoDto? PersistenciaBackend = null,
-    EstatisticaTempoDto? ProcessamentoProcedure = null,
-    EstatisticaTempoDto? PersistenciaProcedure = null)
-{
-    public double DiferencaPercentual =>
-        Backend.MediaMs <= 0 ? 0 : ((Procedure.MediaMs - Backend.MediaMs) / Backend.MediaMs) * 100;
-}
+    IReadOnlyList<double>? TemposProcessamentoBackendMs = null,
+    IReadOnlyList<double>? TemposPersistenciaBackendMs = null,
+    IReadOnlyList<double>? TemposProcessamentoProcedureMs = null,
+    IReadOnlyList<double>? TemposPersistenciaProcedureMs = null);
 
 public sealed record BenchmarkResultadoDto(
     BenchmarkCenarioDto Cenario,
